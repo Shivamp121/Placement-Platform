@@ -24,3 +24,9 @@ export const login = async (req:Request,res:Response)=>{
         })
     }
 }
+
+export const me = (req:any,res:any)=>{
+    res.json(
+        req.user
+    );
+}
