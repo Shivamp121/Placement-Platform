@@ -3,7 +3,7 @@ import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middelwares/auth.middelware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import recruiterRoutes from "./routes/recruiter.routes.js";
-import studentRoutes from "./routes/student.route.js";
+import studentRoutes from "./routes/student.routes.js";
 const app = express();
 
 app.use(express.json());

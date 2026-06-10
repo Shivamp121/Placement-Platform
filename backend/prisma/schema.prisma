@@ -17,6 +17,23 @@ model User {
   email     String   @unique 
   password  String 
   role      Role
+  studentProfile StudentProfile?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model StudentProfile{
+  id String @id @default(uuid())
+  userId String @unique
+  firstName String
+  lastName String
+  college String
+  degree String
+  branch String
+  graduationYear Int 
+  githubUrl String?
+  linkedinUrl String?
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
