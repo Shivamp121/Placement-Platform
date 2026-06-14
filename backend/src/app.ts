@@ -2,8 +2,10 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middelwares/auth.middelware.js";
 import adminRoutes from "./routes/admin.routes.js";
-import recruiterRoutes from "./routes/recruiter.routes.js";
+import companyRoutes from "./routes/company.routes.js";
 import studentRoutes from "./routes/student.routes.js";
+import jobRoutes from "./routes/job.routes.js"
+import recruiterRoutes from "./routes/recruiter.routes.js"
 const app = express();
 
 app.use(express.json());
@@ -16,9 +18,10 @@ app.get("/", (req, res) => {
 app.use("/auth",authRoutes);
 app.use("/admin",adminRoutes);
 
-app.use("/recruiter",recruiterRoutes);
+app.use("/companies",companyRoutes);
 app.use("/student",studentRoutes);
-
+app.use("/jobs",jobRoutes);
+app.use("/recruiters",recruiterRoutes)
 app.get("/profile",protect,(req, res) => {
     res.json({
       message:"Protected Route",

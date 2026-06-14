@@ -5,7 +5,8 @@ import {
 } from "../repositories/user.repository.js";
 import type { Role } from "@prisma/client";
 import { generateToken } from "../utils/jwt.js";
-export const registerUser = async(email:string,password:string,role:Role)=>{
+export class userService{
+    async registerUser (email:string,password:string,role:Role){
     const existingUser=await findUserByEmail(email);
     if(existingUser){
         throw new Error("User already exists");
@@ -18,7 +19,7 @@ export const registerUser = async(email:string,password:string,role:Role)=>{
     );
 ;}
 
-export const loginUser=async(email:string,password:string)=>{
+     async loginUser(email:string,password:string){
 const user=await findUserByEmail(email);
 if(!user){
     throw new Error(
@@ -34,5 +35,6 @@ if(!isMatch){
 const token=generateToken(user.id,user.role);
 return {
     user,token
+}
 }
 }

@@ -1,10 +1,19 @@
 import { Router } from "express";
 import { protect } from "../middelwares/auth.middelware.js";
 import { authorize } from "../middelwares/role.middlewares.js";
-const router=Router();
-router.get("/dashboard",protect,authorize("RECRUITER"), (req, res) => {res.json({
-      message:"Recruiter Dashboard",
-    });
-})
+// import { validate } from "../middelwares/validate.middleware.js";
+// import { createRecruiterProfileSchema } from "../validators/";
+import { createRecruiterProfileController } from "../controllers/recruiter.controller.js";
+
+const router = Router();
+
+// Create profile
+router.post(
+  "/profile", 
+  protect, 
+  authorize("RECRUITER"), 
+//   validate(createRecruiterProfileSchema), 
+  createRecruiterProfileController
+);
 
 export default router;

@@ -1,4 +1,4 @@
-import {email, z} from "zod";
+import {z} from "zod";
 export const createStudentSchema=z.object({
     firstName: z.string(),
     lastName:z.string(),
@@ -7,5 +7,6 @@ export const createStudentSchema=z.object({
     branch:z.string(),
     graduationYear:z.number(),
     githubUrl:z.string().optional(),
-    linkedinUrl:z.string().optional()
+    linkedinUrl:z.string().optional(),
+    skills:z.array(z.string()).optional(),
 });
