@@ -10,3 +10,6 @@ export const createJobSchema = z.object({
     companyId: z.string().uuid("Valid Company ID is required"), // ADDED BACK
   }),
 });
+export const updateJobSchema=z.object({
+  body:createJobSchema.shape.body.partial(),
+})

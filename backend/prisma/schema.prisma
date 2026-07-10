@@ -25,8 +25,8 @@ model User {
 }
 
 model StudentProfile {
-  id             String   @id @default(uuid())
-  userId         String   @unique
+  id             String        @id @default(uuid())
+  userId         String        @unique
   firstName      String
   lastName       String
   college        String
@@ -36,9 +36,11 @@ model StudentProfile {
   githubUrl      String?
   linkedinUrl    String?
   skills         String[]
-  user           User     @relation(fields: [userId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now())
+  applications   Application[]
+  resumes        Resume[]
 }
 
 model Company {
@@ -80,18 +82,53 @@ enum JobStatus {
 }
 
 model Job {
-  id           String    @id @default(uuid())
+  id           String        @id @default(uuid())
   title        String
-  description  String    @db.Text
+  description  String        @db.Text
   requirements String[]
   salaryRange  String?
   location     String
-  jobType      JobType   @default(FULL_TIME)
-  status       JobStatus @default(OPEN)
+  jobType      JobType       @default(FULL_TIME)
+  status       JobStatus     @default(OPEN)
   companyId    String
-  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   recruiterId  String
-  recruiter    User      @relation(fields: [recruiterId], references: [id])
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  recruiter    User          @relation(fields: [recruiterId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+model Application {
+  id        String            @id @default(uuid())
+  studentId String
+  student   StudentProfile    @relation(fields: [studentId], references: [id],onDelete: Cascade)
+  jobId     String
+  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  resumeUrl String?
+  atsScore  Float?
+  status    ApplicationStatus @default(APPLIED)
+  appliedAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([studentId, jobId])
+}
+
+model Resume {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileUrl   String // The final AWS S3 URL
+  isDefault Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
