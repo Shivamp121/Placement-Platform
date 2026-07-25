@@ -1,0 +1,34 @@
+name: Continuous Deployment to AWS EC2
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2 Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            if [ ! -d Placement-Platform ]; then
+              git clone https://github.com/Shivamp121/Placement-Platform.git
+            fi
+            
+            # This line is now fixed!
+            cd Placement-Platform
+
+            git pull origin main
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "REDIS_URL=redis://redis:6379" >> .env
+            echo "PORT=3000" >> .env
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            docker-compose down
+            docker-compose up -d --build
+            docker exec -t jobboard_api npx prisma db push
