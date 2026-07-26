@@ -27,7 +27,7 @@ jobs:
             cd backend
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "REDIS_URL=redis://redis:6379" >> .env
-            echo "PORT=3000" >> .env
+            echo "PORT=5000" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             docker compose down
