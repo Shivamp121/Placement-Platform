@@ -24,6 +24,7 @@ jobs:
             cd Placement-Platform
 
             git pull origin main
+            cd backend
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "REDIS_URL=redis://redis:6379" >> .env
             echo "PORT=3000" >> .env
