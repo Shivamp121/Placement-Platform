@@ -29,6 +29,6 @@ jobs:
             echo "PORT=3000" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
             docker exec -t jobboard_api npx prisma db push
