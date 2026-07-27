@@ -1,69 +1,83 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import 'dotenv/config';
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import 'dotenv/config'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
-
-  const filePath = path.join(__dirname, '../jobs.json'); 
+  const filePath = path.join(dirname, '../jobs.json')
+  
   if (!fs.existsSync(filePath)) {
-    throw new Error(`Cannot find jobs.json at path: ${filePath}`);
+    throw new Error(`Cannot find jobs.json at path: ${filePath}`)
   }
 
-  const rawData = fs.readFileSync(filePath, 'utf-8');
-  const jobsData = JSON.parse(rawData);
-  let company = await prisma.company.findFirst();
+  const rawData = fs.readFileSync(filePath, 'utf-8')
+  const jobsData = JSON.parse(rawData)
+
+  let company = await prisma.company.findFirst()
 
   if (!company) {
-    console.log('No existing company found. Creating a default Company...');
     company = await prisma.company.create({
       data: {
         name: 'TechNova Solutions',
         description: 'Default hiring company for seed data',
-        industry: 'Software & Technology',
+        industry: 'Software and Technology',
         website: 'https://technova.example.com',
       },
-    });
-    console.log(`Default Company created with ID: ${company.id}`);
-  } else {
-    console.log(`Using existing Company ID: ${company.id}`);
+    })
   }
+
+  let recruiter = await prisma.recruiterProfile.findFirst()
+
+  if (!recruiter) {
+    const recruiterUser = await prisma.user.create({
+      data: {
+        email: 'recruiter@technova.example.com',
+        password: 'hashedpassword123',
+        name: 'Hiring Manager',
+        role: 'RECRUITER',
+      },
+    })
+
+    recruiter = await prisma.recruiterProfile.create({
+      data: {
+        userId: recruiterUser.id,
+        companyId: company.id,
+      },
+    })
+  }
+
   const jobsToInsert = jobsData.map((job: any) => {
-    // Remove the string "company" field from JSON so it doesn't conflict
-    const { company: _companyName, ...jobDetails } = job;
+    const { company: companyName, ...jobDetails } = job
 
     return {
       ...jobDetails,
-      companyId: company.id, 
-    };
-  });
+      companyId: company.id,
+      recruiterId: recruiter.id,
+    }
+  })
 
-  // 4. Bulk insert the updated jobs
-  const result = await prisma.job.createMany({
+  await prisma.job.createMany({
     data: jobsToInsert,
     skipDuplicates: true,
-  });
-
-  console.log(`Successfully seeded ${result.count} jobs into the database! 🎉`);
+  })
 }
 
 main()
   .catch((e) => {
-    console.error('Seeding failed:', e);
-    process.exit(1);
+    console.error(e)
+    process.exit(1)
   })
   .finally(async () => {
-    await prisma.$disconnect();
-    await pool.end();
-  });
+    await prisma.$disconnect()
+    await pool.end()
+  })
