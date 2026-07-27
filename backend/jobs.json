@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Frontend Developer",
+    "company": "TechNova Solutions",
+    "location": "Remote",
+    "type": "Full-time",
+    "salary": "₹8,00,000",
+    "description": "Looking for a skilled developer with experience in React and modern CSS."
+  },
+  {
+    "title": "Backend Engineer",
+    "company": "DataFlow Systems",
+    "location": "Prayagraj, UP",
+    "type": "Full-time",
+    "salary": "₹10,00,000",
+    "description": "Seeking a backend engineer proficient in Node.js, Express, and PostgreSQL."
+  },
+  {
+    "title": "Full Stack Intern",
+    "company": "WebSphere",
+    "location": "Remote",
+    "type": "Internship",
+    "salary": "₹20,000/month",
+    "description": "Great opportunity for a final year B.Tech student to work on production CI/CD pipelines."
+  },
+  {
+    "title": "DevOps Engineer",
+    "company": "CloudScale",
+    "location": "Noida, UP",
+    "type": "Full-time",
+    "salary": "₹12,00,000",
+    "description": "Experience required with AWS EC2, Docker, Nginx, and GitHub Actions."
+  }
+]
