@@ -8,12 +8,14 @@ import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('Starting database seeding...');
+  console.log('🌱 Starting database seeding...');
+
   const filePath = path.join(__dirname, '../jobs.json'); 
   if (!fs.existsSync(filePath)) {
     throw new Error(`Cannot find jobs.json at path: ${filePath}`);
@@ -21,7 +23,6 @@ async function main() {
 
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const jobsData = JSON.parse(rawData);
-
   let company = await prisma.company.findFirst();
 
   if (!company) {
@@ -30,7 +31,8 @@ async function main() {
       data: {
         name: 'TechNova Solutions',
         description: 'Default hiring company for seed data',
-        location: 'Remote',
+        industry: 'Software & Technology',
+        website: 'https://technova.example.com',
       },
     });
     console.log(`Default Company created with ID: ${company.id}`);
@@ -38,6 +40,7 @@ async function main() {
     console.log(`Using existing Company ID: ${company.id}`);
   }
   const jobsToInsert = jobsData.map((job: any) => {
+    // Remove the string "company" field from JSON so it doesn't conflict
     const { company: _companyName, ...jobDetails } = job;
 
     return {
@@ -45,6 +48,8 @@ async function main() {
       companyId: company.id, 
     };
   });
+
+  // 4. Bulk insert the updated jobs
   const result = await prisma.job.createMany({
     data: jobsToInsert,
     skipDuplicates: true,
