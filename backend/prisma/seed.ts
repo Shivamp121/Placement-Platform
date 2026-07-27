@@ -15,7 +15,7 @@ const prisma = new PrismaClient({ adapter })
 
 async function main() {
   const filePath = path.join(dirname, '../jobs.json')
-  
+
   if (!fs.existsSync(filePath)) {
     throw new Error(`Cannot find jobs.json at path: ${filePath}`)
   }
@@ -36,33 +36,38 @@ async function main() {
     })
   }
 
-  let recruiter = await prisma.recruiterProfile.findFirst()
+  let recruiterUser = await prisma.user.findFirst({
+    where: { role: 'RECRUITER' },
+  })
 
-  if (!recruiter) {
-    const recruiterUser = await prisma.user.create({
+  if (!recruiterUser) {
+    recruiterUser = await prisma.user.create({
       data: {
         email: 'recruiter@technova.example.com',
         password: 'hashedpassword123',
-        name: 'Hiring Manager',
         role: 'RECRUITER',
-      },
-    })
-
-    recruiter = await prisma.recruiterProfile.create({
-      data: {
-        userId: recruiterUser.id,
-        companyId: company.id,
+        recruiterProfile: {
+          create: {
+            designation: 'Senior Hiring Manager',
+            companies: {
+              connect: { id: company.id },
+            },
+          },
+        },
       },
     })
   }
 
   const jobsToInsert = jobsData.map((job: any) => {
-    const { company: companyName, ...jobDetails } = job
+    const { company: companyName, salary, type, requirements, ...jobDetails } = job
 
     return {
       ...jobDetails,
+      salaryRange: salary || job.salaryRange || 'Not specified',
+      jobType: type === 'Internship' ? 'INTERNSHIP' : 'FULL_TIME',
+      requirements: requirements || [],
       companyId: company.id,
-      recruiterId: recruiter.id,
+      recruiterId: recruiterUser.id,
     }
   })
 
