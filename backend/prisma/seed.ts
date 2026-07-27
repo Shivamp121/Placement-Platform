@@ -1,51 +1,23 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
-import "dotenv/config";
+import fs from 'fs';
+import path from 'path';
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter }); 
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting database seeding...");
-  const existingJob = await prisma.job.findFirst();
-  const existingStudent = await prisma.studentProfile.findFirst();
-  if (!existingJob || !existingStudent) {
-    console.error("Seeding halted: You must have at least one Job and one Student Profile created in your database before running this seed script.");
-    return;
-  }
+  console.log('Start seeding...');
 
-  console.log(`Found Job ID: ${existingJob.id}`);
-  console.log(`Found Student ID: ${existingStudent.id}`);
-
-  const statuses = ["APPLIED", "UNDER_REVIEW", "SHORTLISTED", "REJECTED"];
+  const filePath = path.join(__dirname, '../jobs.json');
   
-  console.log("Creating 10 dummy applications...");
-  for (let i = 0; i < 10; i++) {
-    const randomScore = Math.floor(Math.random() * (95 - 40 + 1) + 40); 
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    await prisma.application.upsert({
-      where: {
-        studentId_jobId: {
-          studentId: existingStudent.id,
-          jobId: existingJob.id
-        }
-      },
-      update: {
-        atsScore: randomScore,
-        status: randomStatus as any
-      },
-      create: {
-        jobId: existingJob.id,
-        studentId: existingStudent.id,
-        atsScore: randomScore,
-        status: randomStatus as any
-      }
-    });
-  }
+  const rawData = fs.readFileSync(filePath, 'utf-8');
+  const jobs = JSON.parse(rawData);
 
-  console.log("Seeding finished! 10 dummy applications created or updated successfully. 🎉");
+  const result = await prisma.job.createMany({
+    data: jobs,
+    skipDuplicates: true, 
+  });
+
+  console.log(`Successfully seeded ${result.count} jobs into the database!`);
 }
 
 main()
@@ -55,5 +27,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });
