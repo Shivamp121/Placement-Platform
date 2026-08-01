@@ -4,6 +4,9 @@
     "target": "esnext",
     "types": [],
     
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

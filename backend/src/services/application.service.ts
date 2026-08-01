@@ -15,7 +15,7 @@ export class ApplicationService{
         try{
       
         const application = await appRepo.applyToJob(studentProfile.id, jobId);
-        const aiEvaluation = await atsService.evaluateResume(userId, jobId);
+        const aiEvaluation = await atsService.evaluateResumeForJob(userId, jobId);
         const updatedApplication = await prisma.application.update({
         where: { id: application.id },
         data: {
@@ -49,4 +49,5 @@ export class ApplicationService{
 
     return await appRepo.getApplicationByStudentId(studentProfile.id);
   }
+  
 }

@@ -13,15 +13,17 @@ enum Role {
 }
 
 model User {
-  id               String            @id @default(uuid())
-  email            String            @unique
-  password         String
-  role             Role
-  studentProfile   StudentProfile?
+  id String @id @default(uuid())
+  email String  @unique
+  password String
+  role    Role
+  studentProfile  StudentProfile?
   recruiterProfile RecruiterProfile?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  jobs             Job[]
+  createdAt DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  jobs Job[]
+  sentMessages Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model StudentProfile {
@@ -41,6 +43,7 @@ model StudentProfile {
   updatedAt      DateTime      @default(now())
   applications   Application[]
   resumes        Resume[]
+  submissions    Submission[]
 }
 
 model Company {
@@ -110,7 +113,7 @@ enum ApplicationStatus {
 model Application {
   id        String            @id @default(uuid())
   studentId String
-  student   StudentProfile    @relation(fields: [studentId], references: [id],onDelete: Cascade)
+  student   StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   jobId     String
   job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
   resumeUrl String?
@@ -122,13 +125,68 @@ model Application {
   @@unique([studentId, jobId])
 }
 
+enum AtsStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Resume {
-  id        String         @id @default(uuid())
-  studentId String
-  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  fileName  String
-  fileUrl   String // The final AWS S3 URL
-  isDefault Boolean        @default(false)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id         String         @id @default(uuid())
+  studentId  String
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String
+  isDefault  Boolean        @default(false)
+  atsStatus  AtsStatus      @default(PENDING)
+  atsScore   Float?
+  aiFeedback String?        @db.Text
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model Contest {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  challenges  CodingChallenge[]
+  createdAt   DateTime          @default(now())
+}
+
+model CodingChallenge {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contestId String @db.Uuid
+  contest        Contest      @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  expectedInput  String
+  expectedOutput String
+  submissions    Submission[]
+}
+
+model Submission {
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId    String
+  student      StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  challengeId  String @db.Uuid
+  challenge    CodingChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  language     String
+  sourceCode   String
+  statusId     Int
+  timeExecuted Float?
+  memoryUsed   Int?
+  submittedAt  DateTime        @default(now())
+}
+model Message {
+  id String @id @default(uuid())
+  senderId String
+  sender User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content String
+  isRead Boolean @default(false)
+  createdAt DateTime @default(now())
 }

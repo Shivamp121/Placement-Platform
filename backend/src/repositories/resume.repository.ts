@@ -9,7 +9,7 @@ export class ResumeRepository {
         studentId,
         fileName,
         fileUrl,
-        isDefault: count === 0, // First resume uploaded becomes default automatically
+        isDefault: count === 0, 
       }
     });
   }

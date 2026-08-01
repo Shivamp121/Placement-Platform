@@ -16,9 +16,20 @@ import resumeRoutes from "./routes/resume.routes.js";
 import { ensureBucketExists } from "./config/aws.js";
 import atsRoutes from "./routes/ats.routes.js"
 import analyticsRoutes from "./routes/analytics.route.js"
+import contestRoutes from "./routes/contest.routes.js"
+import "./workers/ats.worker.js";
+
+import { createServer } from "http";
+import { initializeSocket } from "./config/socket.js";
 
 
 const app = express();
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+  console.log(`Server & WebSockets running on port ${PORT}`);
+});
 
 app.use(helmet());
 
@@ -37,6 +48,7 @@ const globalLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/socket.io'),
 });
 app.use(globalLimiter);
 
@@ -56,7 +68,7 @@ app.get("/", (req, res) => {
     message: "API Running",
   });
 });
-app.use("/auth", authLimiter, authRoutes);
+app.use("/auth",authLimiter, authRoutes);
 app.use("/admin",adminRoutes);
 
 app.use("/companies",companyRoutes);
@@ -67,6 +79,7 @@ app.use("/applications",applicationRoutes);
 app.use("/resumes",resumeRoutes);
 app.use("/ats",atsRoutes);
 app.use("/analytics", analyticsRoutes)
+app.use("/contests",contestRoutes)
 app.get("/profile",protect,(req, res) => {
     res.json({
       message:"Protected Route",
